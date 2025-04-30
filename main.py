@@ -1,35 +1,41 @@
-import os
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
+from dotenv.main import DotEnv
 from fastapi import FastAPI, Depends, HTTPException, Header
-import ollama
+from langchain_openai import OpenAI
+from rag import create_prompt
 
 load_dotenv()
 
+
+API_KEYS = DotEnv(find_dotenv()).dict()
+
+if not len(API_KEYS):
+    raise ValueError("No API keys found")
+
+API_KEY_CREDITS = dict.fromkeys(API_KEYS.values(), 5)
+
 app = FastAPI()
+OPEN_AI_LLM = OpenAI()
 
-API_KEY_CREDITS = {os.getenv("API_KEY"): 5}
+
+def get_response(request: str, llm: OpenAI):
+    if isinstance(llm, OpenAI):
+        return llm.invoke(request)
+    return request
 
 
-def verify_key(api_key: str = Header(None)):
-    if API_KEY_CREDITS.get(api_key, 0) <= 0:
+def verify_key(x_api_key: str = Header(None)):
+    if API_KEY_CREDITS.get(x_api_key, 0) <= 0:
         raise HTTPException(status_code=401, detail="Invalid API Key")
-    return api_key
+    return x_api_key
 
 
 @app.post("/predict")
-def predict(prompt: str, api_key: str = Depends(verify_key)):
-    API_KEY_CREDITS[api_key] -= 1
-    # Simulate a call to the ollama API
-    # In a real-world scenario, you would replace this with the actual API call
-    # For example:
-    # 1. Call the ollama API with the prompt
-    # 2. Get the response
-    # 3. Return the response to the client
-    # For now, we'll just return a dummy response
-    # Dummy response
-    response = {"message": {"content": prompt}}
-    # ollama.chat(
-    #     model="mistral",
-    #     messages=[{"role": "user", "content": prompt}],
-    # )
-    return {"response": response["message"]["content"]}
+def predict(request: str, x_api_key: str = Depends(verify_key)):
+    API_KEY_CREDITS[x_api_key] -= 1
+    prompt = create_prompt(request)
+    return {"response": get_response(prompt, OPEN_AI_LLM)}
+
+
+if __name__ == "__main__":
+    print(get_response("What is rust langage ?", OpenAI()))
