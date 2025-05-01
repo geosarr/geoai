@@ -22,31 +22,42 @@ def create_chroma_database(
     if isinstance(data_element, Document):
         Chroma.from_documents(data, embedding, persist_directory=path)
         printer()
+        return True
     if isinstance(data_element, str):
         Chroma.from_texts(data, embedding, persist_directory=path)
         printer()
-    return True
+        return True
+    return False
 
 
 if __name__ == "__main__":
-    # from loader import load_pdf_lazily
+    from loader import load_pdf_lazily
+
     # from pypdf import PdfReader
+    from splitter import recursive_splitter, split_documents
     from dotenv import load_dotenv
 
-    # path = "data/s3-api.pdf"
-    # # Reading to Document
-    # documents = load_pdf_lazily(path, max_nb_docs=4000, write_stdout=False)
+    path = "data/s3-api.pdf"
+    ## Reading to Document
+    docs = load_pdf_lazily(path, max_nb_docs=4000, write_stdout=False)
 
-    # # Reading to str
+    # ## Reading to str
     # reader = PdfReader(path)
-    # documents = [reader.pages[i].extract_text() for i in range(10)]
+    # docs = [reader.pages[i].extract_text() for i in range(10)]
 
+    text_splitter = recursive_splitter(chunk_size=1000, chunk_overlap=200)
+    documents = split_documents(docs, text_splitter)
+
+    ## Loading OPENAI_API_KEY and OpenAI embeddings
     load_dotenv()
     embedding = OpenAIEmbeddings()
-    # create_chroma_database(documents, embedding, False, CHROMA_PATH)
+    create_chroma_database(documents, embedding, True, CHROMA_PATH)
 
+    ## Reading the persisted Chroma database
     vectordb = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding)
     retriever = vectordb.as_retriever()
+
+    ## Retrieving most relevant answers using stored vector embeddings
     response = retriever.invoke("What request to use to send a DELETE HTTPS request ?")
     for doc in response:
         print(doc.page_content)
