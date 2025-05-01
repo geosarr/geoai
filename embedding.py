@@ -23,7 +23,10 @@ def create_chroma_database(
             print("Please delete the existing database or set override=True.")
             return
     data_element = data[0]
-    printer = lambda: print(f"Saved {len(data)} documents to {path}.")
+
+    def printer():
+        print(f"Saved {len(data)} documents to {path}.")
+
     if isinstance(data_element, Document):
         db = Chroma.from_documents(data, embedding, persist_directory=path)
         printer()

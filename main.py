@@ -1,5 +1,4 @@
-from dotenv import find_dotenv, load_dotenv
-from dotenv.main import DotEnv
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, Header
 from langchain_openai import OpenAI
 from constants import API_KEYS
