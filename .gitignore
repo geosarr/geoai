@@ -11,3 +11,6 @@ wheels/
 
 # Environnment variables
 .env
+
+# Database
+/chroma

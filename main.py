@@ -2,18 +2,16 @@ from dotenv import find_dotenv, load_dotenv
 from dotenv.main import DotEnv
 from fastapi import FastAPI, Depends, HTTPException, Header
 from langchain_openai import OpenAI
+from constants import API_KEYS
 from rag import create_prompt
 
-load_dotenv()
-
-
-API_KEYS = DotEnv(find_dotenv()).dict()
 
 if not len(API_KEYS):
     raise ValueError("No API keys found")
 
 API_KEY_CREDITS = dict.fromkeys(API_KEYS.values(), 5)
 
+load_dotenv()
 app = FastAPI()
 OPEN_AI_LLM = OpenAI()
 
