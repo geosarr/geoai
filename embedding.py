@@ -34,7 +34,10 @@ def create_chroma_database(
         return db
 
 
-def get_retriever(embedding: OpenAIEmbeddings, path: str = CHROMA_PATH):
+def get_retriever(path: str = CHROMA_PATH):
+    from dotenv import load_dotenv
+
+    load_dotenv()
     ## Reading the persisted Chroma database
-    vectordb = Chroma(persist_directory=path, embedding_function=embedding)
+    vectordb = Chroma(persist_directory=path, embedding_function=OpenAIEmbeddings())
     return vectordb.as_retriever()

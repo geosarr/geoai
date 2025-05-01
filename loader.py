@@ -76,7 +76,7 @@ if __name__ == "__main__":
     vector_db = pre_process(
         path=path, chunk_size=1000, chunk_overlap=200, override=False
     )
-    response = vector_db.as_retriever().invoke("Which langauages are supported by s3?")
+    response = vector_db.as_retriever().invoke("Which languages are supported by s3?")
     for doc in response:
         print(doc.page_content)
         print("=======================================================\n")
