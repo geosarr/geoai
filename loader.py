@@ -1,6 +1,7 @@
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from tqdm.auto import tqdm
+from pypdf import PdfReader
 
 
 def load_pdf(path: str):
@@ -12,14 +13,16 @@ def lazy_load_pdf(path: str):
 
 
 def load_pdf_lazily(path: str, max_nb_docs: int = 100, write_stdout: bool = False):
+    total_nb_pages = len(PdfReader(path).pages)
+    nb_pages = min(max_nb_docs, total_nb_pages)
     lazy_docs = lazy_load_pdf(path)
-    documents = [Document("")] * max_nb_docs
+    documents = [Document("")] * nb_pages
     for page, doc in tqdm(
         enumerate(lazy_docs),
-        total=max_nb_docs,
-        desc=f"Loading at most {max_nb_docs} pages from {path}",
+        total=nb_pages,
+        desc=f"Loading {nb_pages} pages from {path}",
     ):
-        if page >= max_nb_docs:
+        if page >= nb_pages:
             break
         documents[page] = doc
         if write_stdout:
