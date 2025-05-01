@@ -13,4 +13,4 @@ wheels/
 .env
 
 # Database
-/chroma
+*chroma*
